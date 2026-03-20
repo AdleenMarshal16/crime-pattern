@@ -53,6 +53,7 @@ dist-ssr/
 *.sqlite3
 *.db
 backend/uploads/
+backend/.evidence_vault/
 backend/test.db
 backend/crime.db
 

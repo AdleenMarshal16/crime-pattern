@@ -4,7 +4,7 @@ Crime Pattern Detection & District Management System — FastAPI Application.
 import os
 from datetime import datetime, timezone
 from typing import Optional
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Query, status
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Query, status, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
@@ -26,6 +26,7 @@ from liveness_auth import (
     get_face_encoding_from_frame,
     compare_face_encoding,
 )
+from telegram_alerts import send_telegram_alert
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -46,7 +47,7 @@ app.add_middleware(
 )
 
 # Serve uploaded evidence files
-UPLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")
+UPLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".evidence_vault")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
@@ -153,9 +154,11 @@ def list_districts(db: Session = Depends(get_db)):
 #                 CRIME REPORT ENDPOINTS
 # ========================================================
 
+@app.post("/submit-report", response_model=CrimeReportOut)
 @app.post("/api/reports", response_model=CrimeReportOut)
 def create_report(
     report: CrimeReportCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ):
     """
@@ -183,6 +186,22 @@ def create_report(
     db.add(db_report)
     db.commit()
     db.refresh(db_report)
+
+    district_name_out = None
+    if db_report.district:
+        district_name_out = db_report.district.name
+
+    # Integrated Action: Hash Evidence -> Map District -> Save -> Send Telegram
+    alert_payload = {
+        "id": db_report.id,
+        "crime_type": db_report.crime_type,
+        "district_name": district_name_out,
+        "severity": db_report.severity,
+        "latitude": db_report.latitude,
+        "longitude": db_report.longitude,
+        "description": db_report.description
+    }
+    background_tasks.add_task(send_telegram_alert, alert_payload)
 
     district_name_out = None
     if db_report.district:
@@ -346,6 +365,7 @@ def get_heatmap(
     return get_heatmap_data(report_dicts)
 
 
+@app.get("/api/hotspots")
 @app.get("/api/clusters")
 def get_clusters(
     district_id: Optional[int] = Query(None),

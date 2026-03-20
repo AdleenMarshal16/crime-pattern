@@ -6,7 +6,7 @@ import hashlib
 import shutil
 from fastapi import UploadFile
 
-UPLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")
+UPLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".evidence_vault")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 CHUNK_SIZE = 8192  # 8KB chunks for memory-safe streaming
@@ -29,14 +29,14 @@ def hash_and_store(upload_file: UploadFile) -> str:
 
     try:
         with open(temp_path, "wb") as tmp_file:
-            # Use shutil.copyfileobj for memory-safe streaming
-            # We wrap to also compute hash during streaming
-            while True:
-                chunk = upload_file.file.read(CHUNK_SIZE)
-                if not chunk:
-                    break
+            # Use shutil.copyfileobj for memory-safe streaming of large videos
+            shutil.copyfileobj(upload_file.file, tmp_file)
+
+        # Compute SHA-256 after streaming
+        sha256 = hashlib.sha256()
+        with open(temp_path, "rb") as f:
+            for chunk in iter(lambda: f.read(CHUNK_SIZE), b""):
                 sha256.update(chunk)
-                tmp_file.write(chunk)
 
         file_hash = sha256.hexdigest()
         final_path = os.path.join(UPLOAD_DIR, f"{file_hash}{ext}")
