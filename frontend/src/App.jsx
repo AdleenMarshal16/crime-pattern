@@ -9,9 +9,11 @@ import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import ReportForm from './pages/ReportForm';
 import Analytics from './pages/Analytics';
+import Reports from './pages/Reports';
 
 // Components
 import Sidebar from './components/Sidebar';
+import EmergencyContacts from './components/EmergencyContacts';
 
 function App() {
   const [admin, setAdmin] = useState(null);
@@ -79,6 +81,7 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-slate-900 font-sans">
+        <EmergencyContacts />
         <Routes>
           {/* Public Landing Page */}
           <Route 
@@ -130,6 +133,17 @@ function App() {
                 <Sidebar admin={admin} onLogout={handleAdminLogout} />
                 <main className="flex-1 overflow-y-auto">
                   <Analytics admin={admin} />
+                </main>
+              </div>
+            ) : <Navigate to="/admin-login" replace />} 
+          />
+          <Route 
+            path="/reports" 
+            element={admin ? (
+              <div className="flex h-screen overflow-hidden">
+                <Sidebar admin={admin} onLogout={handleAdminLogout} />
+                <main className="flex-1 overflow-y-auto">
+                  <Reports admin={admin} />
                 </main>
               </div>
             ) : <Navigate to="/admin-login" replace />} 

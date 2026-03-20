@@ -49,6 +49,7 @@ class CrimeReport(Base):
     timestamp = Column(DateTime(timezone=True), nullable=False)
     evidence_hash = Column(String(64), nullable=True)  # SHA-256
     reported_by = Column(String(255), nullable=True)
+    status = Column(String(50), nullable=False, default="pending", server_default="pending")  # pending | investigating | resolved
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     district = relationship("District", back_populates="crime_reports")

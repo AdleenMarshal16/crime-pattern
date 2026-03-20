@@ -15,6 +15,7 @@ from models import Admin, District, CrimeReport
 from schemas import (
     CrimeReportCreate, CrimeReportOut, DistrictOut, AdminOut,
     LoginRequest, TokenResponse, HeatmapPoint, DashboardStats,
+    CrimeReportStatusUpdate,
 )
 from auth import create_access_token, get_current_admin
 from district_mapping import get_district_for_coordinates
@@ -177,6 +178,7 @@ def create_report(
         district_id=district_id,
         timestamp=report.timestamp or datetime.now(timezone.utc),
         reported_by=report.reported_by,
+        status="pending",
     )
     db.add(db_report)
     db.commit()
@@ -198,14 +200,55 @@ def create_report(
         timestamp=db_report.timestamp,
         evidence_hash=db_report.evidence_hash,
         reported_by=db_report.reported_by,
+        status=db_report.status,
         created_at=db_report.created_at,
     )
 
+@app.patch("/api/reports/{report_id}/status", response_model=CrimeReportOut)
+def update_report_status(
+    report_id: int,
+    status_update: CrimeReportStatusUpdate,
+    admin: Admin = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    """Update the status of a crime report (Admin only)."""
+    report = db.query(CrimeReport).filter(CrimeReport.id == report_id).first()
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+        
+    # District Admins can only update reports in their district
+    if admin.role != "super_admin" and report.district_id != admin.district_id:
+        raise HTTPException(status_code=403, detail="Not authorized to update this report")
+        
+    if status_update.status not in ["pending", "investigating", "resolved"]:
+        raise HTTPException(status_code=400, detail="Invalid status")
+        
+    report.status = status_update.status
+    db.commit()
+    db.refresh(report)
+    
+    district_name_out = report.district.name if report.district else None
+    return CrimeReportOut(
+        id=report.id,
+        crime_type=report.crime_type,
+        description=report.description,
+        severity=report.severity,
+        latitude=report.latitude,
+        longitude=report.longitude,
+        district_id=report.district_id,
+        district_name=district_name_out,
+        timestamp=report.timestamp,
+        evidence_hash=report.evidence_hash,
+        reported_by=report.reported_by,
+        status=report.status,
+        created_at=report.created_at,
+    )
 
 @app.get("/api/reports", response_model=list[CrimeReportOut])
 def list_reports(
     district_id: Optional[int] = Query(None),
     crime_type: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
     severity_min: Optional[int] = Query(None),
     severity_max: Optional[int] = Query(None),
     limit: int = Query(100, le=500),
@@ -222,6 +265,8 @@ def list_reports(
         query = query.filter(CrimeReport.district_id == district_id)
     if crime_type:
         query = query.filter(CrimeReport.crime_type == crime_type)
+    if status:
+        query = query.filter(CrimeReport.status == status)
     if severity_min is not None:
         query = query.filter(CrimeReport.severity >= severity_min)
     if severity_max is not None:
@@ -244,6 +289,7 @@ def list_reports(
             timestamp=r.timestamp,
             evidence_hash=r.evidence_hash,
             reported_by=r.reported_by,
+            status=r.status,
             created_at=r.created_at,
         ))
     return result

@@ -55,11 +55,15 @@ class CrimeReportOut(BaseModel):
     timestamp: datetime
     evidence_hash: Optional[str] = None
     reported_by: Optional[str] = None
+    status: str
     created_at: datetime
 
     class Config:
         from_attributes = True
 
+
+class CrimeReportStatusUpdate(BaseModel):
+    status: str  # 'pending', 'investigating', 'resolved'
 
 # --- Auth ---
 class LoginRequest(BaseModel):

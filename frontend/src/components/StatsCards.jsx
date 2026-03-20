@@ -57,14 +57,24 @@ export default function StatsCards({ stats, loading }) {
         >
           <div className="flex items-center justify-between">
             <div className="flex-1">
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{card.label}</p>
-              <p className="text-3xl font-bold text-white mt-1">
-                {loading ? (
-                  <span className="inline-block w-12 h-8 bg-slate-700 rounded animate-pulse"></span>
-                ) : (
-                  card.value
+              <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-1.5">{card.label}</p>
+              <div className="flex items-end gap-2">
+                <p className="text-3xl font-semibold font-sans text-white tracking-tight leading-none">
+                  {loading ? (
+                    <span className="inline-block w-12 h-8 bg-slate-700 rounded animate-pulse"></span>
+                  ) : (
+                    card.value
+                  )}
+                </p>
+                {!loading && (
+                  <span className="flex items-center text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full border border-emerald-500/20 mb-0.5">
+                    <svg className="w-2.5 h-2.5 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                    </svg>
+                    2.4%
+                  </span>
                 )}
-              </p>
+              </div>
             </div>
             <div className={`w-12 h-12 rounded-xl ${card.bgGlow} flex items-center justify-center`}>
               <div className={`bg-gradient-to-br ${card.color} bg-clip-text text-transparent`}>

@@ -23,8 +23,10 @@ export default function AlertBanner({ admin, reports }) {
 
   if (!visible || recentAlerts.length === 0) return null;
 
+  const hasErnakulamAlert = recentAlerts.some(r => r.district_name && r.district_name.toLowerCase() === 'ernakulam');
+
   return (
-    <div className="glass-card border-l-4 border-l-amber-500 p-4 animate-fade-in">
+    <div className={`bg-glassy-navy rounded-2xl backdrop-blur-md border border-white/10 shadow-lg p-4 animate-fade-in ${hasErnakulamAlert ? 'border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.3)] animate-pulse' : 'border-l-4 border-l-amber-500'}`}>
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-3">
           <div className="w-8 h-8 bg-amber-500/15 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -35,6 +37,7 @@ export default function AlertBanner({ admin, reports }) {
           <div>
             <h4 className="text-sm font-semibold text-amber-400">
               {recentAlerts.length} Alert{recentAlerts.length !== 1 ? 's' : ''} in Last 24 Hours
+              {hasErnakulamAlert && <span className="ml-2 px-1.5 py-0.5 text-[10px] bg-red-500/20 text-red-400 rounded-full border border-red-500/30 uppercase tracking-wider">Ernakulam</span>}
             </h4>
             <p className="text-xs text-slate-400 mt-1">
               {admin.role === 'super_admin'

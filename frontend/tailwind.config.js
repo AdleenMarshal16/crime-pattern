@@ -7,6 +7,8 @@ export default {
   theme: {
     extend: {
       colors: {
+        charcoal: '#0f172a',
+        'glassy-navy': 'rgba(30, 41, 59, 0.8)',
         primary: {
           50: '#eff6ff',
           100: '#dbeafe',

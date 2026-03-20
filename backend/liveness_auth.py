@@ -101,7 +101,7 @@ def get_face_encoding_from_frame(frame_b64: str) -> list[float] | None:
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     encodings = face_recognition.face_encodings(rgb_frame)
 
-    if len(encodings) == 0:
+    if len(encodings) != 1:
         return None
 
     return encodings[0].tolist()
@@ -110,7 +110,7 @@ def get_face_encoding_from_frame(frame_b64: str) -> list[float] | None:
 def compare_face_encoding(
     live_encoding: list[float],
     stored_encoding: list[float],
-    tolerance: float = 0.6
+    tolerance: float = 0.45
 ) -> bool:
     """
     Compare a live face encoding against a stored 128-d vector.

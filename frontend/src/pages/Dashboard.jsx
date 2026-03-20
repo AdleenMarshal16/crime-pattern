@@ -45,7 +45,7 @@ export default function Dashboard({ admin }) {
   }, [selectedDistrict]);
 
   return (
-    <div className="p-6 space-y-6 max-w-[1600px]">
+    <div className="p-6 space-y-6 max-w-[1600px] bg-charcoal min-h-screen text-slate-200">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -84,12 +84,14 @@ export default function Dashboard({ admin }) {
       {/* Map + Crime Distribution */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Heatmap */}
-        <div className="xl:col-span-2">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="section-title">Crime Heatmap</h3>
-            <span className="text-xs text-slate-500">{heatmapData.length} data points</span>
+        <div className="xl:col-span-2 bg-glassy-navy rounded-2xl backdrop-blur-md border border-white/10 shadow-lg flex flex-col relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-charcoal/80 to-transparent z-[1000] pointer-events-none p-5 flex justify-between items-start">
+            <h3 className="section-title text-white drop-shadow-md">Crime Heatmap</h3>
+            <span className="badge bg-blue-500/20 text-blue-300 border-blue-500/30 backdrop-blur-md">
+              {heatmapData.length} data points
+            </span>
           </div>
-          <div className="h-[420px]">
+          <div className="h-[420px] w-full flex-1">
             <HeatmapMap heatmapData={heatmapData} loading={loading} />
           </div>
         </div>
@@ -97,7 +99,7 @@ export default function Dashboard({ admin }) {
         {/* Crime Type Distribution */}
         <div>
           <h3 className="section-title mb-3">Crime Distribution</h3>
-          <div className="glass-card p-4 space-y-3 animate-fade-in">
+          <div className="bg-glassy-navy rounded-2xl backdrop-blur-md border border-white/10 shadow-lg p-4 space-y-3 animate-fade-in">
             {stats?.crime_type_distribution ? (
               Object.entries(stats.crime_type_distribution)
                 .sort((a, b) => b[1] - a[1])
@@ -136,7 +138,7 @@ export default function Dashboard({ admin }) {
 
           {/* Severity Distribution */}
           <h3 className="section-title mb-3 mt-6">Severity Breakdown</h3>
-          <div className="glass-card p-4 animate-fade-in">
+          <div className="bg-glassy-navy rounded-2xl backdrop-blur-md border border-white/10 shadow-lg p-4 animate-fade-in">
             <div className="grid grid-cols-5 gap-2">
               {[1, 2, 3, 4, 5].map((sev) => {
                 const count = stats?.severity_distribution?.[String(sev)] || 0;
